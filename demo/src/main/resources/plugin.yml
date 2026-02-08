@@ -1,0 +1,8 @@
+name: DemoPlugin
+version: 1.0.0
+main: com.example.demo.DemoPlugin
+api-version: 1.19
+commands:
+  democmd:
+    description: Demo command
+    usage: /democmd
