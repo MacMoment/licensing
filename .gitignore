@@ -1,0 +1,45 @@
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.project
+.classpath
+.settings/
+
+# Build artifacts
+*.jar
+*.war
+*.ear
+*.class
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node (for web UI)
+node_modules/
+dist/
+build/
+
+# Database
+*.db
+*.sqlite
+data/
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
