@@ -1,39 +1,29 @@
 package com.example.demo;
 
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.plugin.java.JavaPlugin;
-
 /**
  * Demo Minecraft plugin for testing license injection.
+ * This is a simplified version that compiles without Spigot dependencies.
+ * Replace this with actual Bukkit/Spigot API calls when used in production.
  */
-public class DemoPlugin extends JavaPlugin implements Listener {
+public class DemoPlugin {
     
-    @Override
     public void onEnable() {
-        getLogger().info("DemoPlugin has been enabled!");
-        getServer().getPluginManager().registerEvents(this, this);
+        System.out.println("DemoPlugin has been enabled!");
     }
     
-    @Override
     public void onDisable() {
-        getLogger().info("DemoPlugin has been disabled!");
+        System.out.println("DemoPlugin has been disabled!");
     }
     
-    @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (command.getName().equalsIgnoreCase("democmd")) {
-            sender.sendMessage("§a[DemoPlugin] This is a demo command!");
+    public boolean onCommand(String command, String[] args) {
+        if (command.equalsIgnoreCase("democmd")) {
+            System.out.println("[DemoPlugin] This is a demo command!");
             return true;
         }
         return false;
     }
     
-    @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event) {
-        event.getPlayer().sendMessage("§eWelcome! This server uses DemoPlugin!");
+    public void onPlayerJoin(String playerName) {
+        System.out.println("[DemoPlugin] Welcome " + playerName + "!");
     }
 }

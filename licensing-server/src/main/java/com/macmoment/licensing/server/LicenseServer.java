@@ -24,7 +24,13 @@ public class LicenseServer {
             
             // Configure server
             port(8080);
-            staticFiles.location("/web");
+            
+            // Try to serve static files from classpath
+            try {
+                staticFiles.location("/web");
+            } catch (Exception e) {
+                System.out.println("Note: Static files not available - web UI may not load");
+            }
             
             // Enable CORS
             options("/*", (request, response) -> {

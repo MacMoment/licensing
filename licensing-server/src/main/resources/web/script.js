@@ -205,7 +205,7 @@ async function loadTiers() {
     try {
         // Load all products first
         const productsResponse = await fetch(`${API_URL}/products`);
-        const products = await response.json();
+        const products = await productsResponse.json();
         
         const container = document.getElementById('tiers-list');
         container.innerHTML = '';
