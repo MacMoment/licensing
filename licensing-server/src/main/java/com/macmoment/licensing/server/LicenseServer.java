@@ -206,6 +206,65 @@ public class LicenseServer {
             return GSON.toJson(response);
         });
         
+        // Toggle license active/inactive
+        put("/api/licenses/:key/toggle", (req, res) -> {
+            String key = req.params(":key");
+            JsonObject request = GSON.fromJson(req.body(), JsonObject.class);
+            boolean active = request.get("active").getAsBoolean();
+            
+            db.toggleLicense(key, active);
+            
+            Map<String, String> response = new HashMap<>();
+            response.put("message", active ? "License activated" : "License deactivated");
+            return GSON.toJson(response);
+        });
+        
+        // Reset HWID binding
+        put("/api/licenses/:key/reset-hwid", (req, res) -> {
+            String key = req.params(":key");
+            db.resetLicenseHwid(key);
+            
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "HWID binding reset successfully");
+            return GSON.toJson(response);
+        });
+        
+        // Delete license
+        delete("/api/licenses/:key", (req, res) -> {
+            String key = req.params(":key");
+            db.deleteLicense(key);
+            return GSON.toJson(Map.of("message", "License deleted"));
+        });
+        
+        // Delete product
+        delete("/api/products/:productId", (req, res) -> {
+            String productId = req.params(":productId");
+            db.deleteProduct(productId);
+            return GSON.toJson(Map.of("message", "Product deleted"));
+        });
+        
+        // Delete tier
+        delete("/api/tiers/:tierId", (req, res) -> {
+            String tierId = req.params(":tierId");
+            db.deleteTier(tierId);
+            return GSON.toJson(Map.of("message", "Tier deleted"));
+        });
+        
+        // Dashboard stats
+        get("/api/stats", (req, res) -> GSON.toJson(db.getStats()));
+        
+        // Validation logs
+        get("/api/logs", (req, res) -> {
+            int limit = 100;
+            String limitParam = req.queryParams("limit");
+            if (limitParam != null) {
+                try {
+                    limit = Integer.parseInt(limitParam);
+                } catch (NumberFormatException ignored) {}
+            }
+            return GSON.toJson(db.getValidationLogs(limit));
+        });
+        
         // Health check
         get("/api/health", (req, res) -> {
             Map<String, Object> health = new HashMap<>();
