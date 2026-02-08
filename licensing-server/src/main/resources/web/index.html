@@ -17,13 +17,54 @@
         </header>
 
         <nav class="tabs">
-            <button class="tab-btn active" data-tab="products">Products</button>
+            <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
+            <button class="tab-btn" data-tab="products">Products</button>
             <button class="tab-btn" data-tab="licenses">Licenses</button>
             <button class="tab-btn" data-tab="tiers">Tiers</button>
+            <button class="tab-btn" data-tab="logs">Logs</button>
         </nav>
 
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+            <div class="section-header">
+                <h2>Overview</h2>
+            </div>
+            <div id="stats-grid" class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📦</div>
+                    <div class="stat-value" id="stat-products">0</div>
+                    <div class="stat-label">Products</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🔑</div>
+                    <div class="stat-value" id="stat-licenses">0</div>
+                    <div class="stat-label">Total Licenses</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-value" id="stat-active">0</div>
+                    <div class="stat-label">Active Licenses</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⏰</div>
+                    <div class="stat-value" id="stat-expired">0</div>
+                    <div class="stat-label">Expired</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🏷️</div>
+                    <div class="stat-value" id="stat-tiers">0</div>
+                    <div class="stat-label">Tiers</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-value" id="stat-validations">0</div>
+                    <div class="stat-label">Validations Today</div>
+                </div>
+            </div>
+        </div>
+
         <!-- Products Tab -->
-        <div id="products" class="tab-content active">
+        <div id="products" class="tab-content">
             <div class="section-header">
                 <h2>Products</h2>
                 <button class="btn btn-primary" onclick="showAddProduct()">+ Add Product</button>
@@ -35,7 +76,12 @@
         <div id="licenses" class="tab-content">
             <div class="section-header">
                 <h2>License Keys</h2>
-                <button class="btn btn-primary" onclick="showAddLicense()">+ Generate License</button>
+                <div class="section-actions">
+                    <div class="search-box">
+                        <input type="text" id="license-search" placeholder="Search licenses..." oninput="filterLicenses()">
+                    </div>
+                    <button class="btn btn-primary" onclick="showAddLicense()">+ Generate License</button>
+                </div>
             </div>
             <div id="licenses-list" class="table-container"></div>
         </div>
@@ -48,18 +94,31 @@
             </div>
             <div id="tiers-list" class="grid"></div>
         </div>
+
+        <!-- Logs Tab -->
+        <div id="logs" class="tab-content">
+            <div class="section-header">
+                <h2>Validation Logs</h2>
+            </div>
+            <div id="logs-list" class="table-container"></div>
+        </div>
     </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
 
     <!-- Add Product Modal -->
     <div id="add-product-modal" class="modal">
         <div class="modal-content">
             <h3>Add New Product</h3>
             <form id="add-product-form">
-                <input type="text" id="product-name" placeholder="Product Name" required>
-                <textarea id="product-description" placeholder="Description" rows="3"></textarea>
+                <label class="form-label">Product Name</label>
+                <input type="text" id="product-name" placeholder="e.g. MyPlugin" required>
+                <label class="form-label">Description</label>
+                <textarea id="product-description" placeholder="Describe your product..." rows="3"></textarea>
                 <div class="modal-actions">
                     <button type="button" class="btn btn-secondary" onclick="closeModal('add-product-modal')">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Create</button>
+                    <button type="submit" class="btn btn-primary">Create Product</button>
                 </div>
             </form>
         </div>
@@ -70,16 +129,19 @@
         <div class="modal-content">
             <h3>Generate License Key</h3>
             <form id="add-license-form">
-                <select id="license-product" required>
+                <label class="form-label">Product</label>
+                <select id="license-product" required onchange="loadTiersForProduct(this.value, 'license-tier')">
                     <option value="">Select Product</option>
                 </select>
+                <label class="form-label">Tier</label>
                 <select id="license-tier">
                     <option value="">No Tier (Full Access)</option>
                 </select>
-                <input type="date" id="license-expiry" placeholder="Expiry Date (optional)">
+                <label class="form-label">Expiry Date (optional)</label>
+                <input type="date" id="license-expiry">
                 <div class="modal-actions">
                     <button type="button" class="btn btn-secondary" onclick="closeModal('add-license-modal')">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Generate</button>
+                    <button type="submit" class="btn btn-primary">Generate Key</button>
                 </div>
             </form>
         </div>
@@ -90,17 +152,33 @@
         <div class="modal-content">
             <h3>Add Pricing Tier</h3>
             <form id="add-tier-form">
+                <label class="form-label">Product</label>
                 <select id="tier-product" required>
                     <option value="">Select Product</option>
                 </select>
-                <input type="text" id="tier-name" placeholder="Tier Name (e.g., Premium)" required>
-                <input type="text" id="tier-features" placeholder="Features (comma-separated)">
-                <input type="number" id="tier-max-users" placeholder="Max Users (0 = unlimited)" min="0">
+                <label class="form-label">Tier Name</label>
+                <input type="text" id="tier-name" placeholder="e.g. Premium" required>
+                <label class="form-label">Features (comma-separated)</label>
+                <input type="text" id="tier-features" placeholder="e.g. feature1, feature2, feature3">
+                <label class="form-label">Max Users (0 = unlimited)</label>
+                <input type="number" id="tier-max-users" placeholder="0" min="0">
                 <div class="modal-actions">
                     <button type="button" class="btn btn-secondary" onclick="closeModal('add-tier-modal')">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Create</button>
+                    <button type="submit" class="btn btn-primary">Create Tier</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Confirm Modal -->
+    <div id="confirm-modal" class="modal">
+        <div class="modal-content modal-sm">
+            <h3 id="confirm-title">Confirm Action</h3>
+            <p id="confirm-message" class="confirm-message">Are you sure?</p>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('confirm-modal')">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirm-action-btn">Confirm</button>
+            </div>
         </div>
     </div>
 

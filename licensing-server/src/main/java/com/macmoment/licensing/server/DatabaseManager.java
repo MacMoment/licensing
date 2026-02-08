@@ -247,6 +247,122 @@ public class DatabaseManager {
         }
     }
     
+    // Toggle license active status
+    
+    public void toggleLicense(String key, boolean active) throws SQLException {
+        String sql = "UPDATE licenses SET active = ? WHERE key = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setBoolean(1, active);
+            stmt.setString(2, key);
+            stmt.executeUpdate();
+        }
+    }
+    
+    // Reset HWID binding
+    
+    public void resetLicenseHwid(String key) throws SQLException {
+        String sql = "UPDATE licenses SET hwid = NULL, ip = NULL WHERE key = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, key);
+            stmt.executeUpdate();
+        }
+    }
+    
+    // Delete operations
+    
+    public void deleteProduct(String id) throws SQLException {
+        try (PreparedStatement stmt = connection.prepareStatement("DELETE FROM products WHERE id = ?")) {
+            stmt.setString(1, id);
+            stmt.executeUpdate();
+        }
+    }
+    
+    public void deleteLicense(String key) throws SQLException {
+        try (PreparedStatement stmt = connection.prepareStatement("DELETE FROM licenses WHERE key = ?")) {
+            stmt.setString(1, key);
+            stmt.executeUpdate();
+        }
+    }
+    
+    public void deleteTier(String id) throws SQLException {
+        try (PreparedStatement stmt = connection.prepareStatement("DELETE FROM tiers WHERE id = ?")) {
+            stmt.setString(1, id);
+            stmt.executeUpdate();
+        }
+    }
+    
+    // Dashboard stats
+    
+    public Map<String, Object> getStats() throws SQLException {
+        Map<String, Object> stats = new HashMap<>();
+        
+        try (Statement stmt = connection.createStatement()) {
+            ResultSet rs = stmt.executeQuery("SELECT COUNT(*) as count FROM products");
+            stats.put("totalProducts", rs.next() ? rs.getInt("count") : 0);
+        }
+        
+        try (Statement stmt = connection.createStatement()) {
+            ResultSet rs = stmt.executeQuery("SELECT COUNT(*) as count FROM licenses");
+            stats.put("totalLicenses", rs.next() ? rs.getInt("count") : 0);
+        }
+        
+        try (Statement stmt = connection.createStatement()) {
+            ResultSet rs = stmt.executeQuery("SELECT COUNT(*) as count FROM licenses WHERE active = 1");
+            stats.put("activeLicenses", rs.next() ? rs.getInt("count") : 0);
+        }
+        
+        try (Statement stmt = connection.createStatement()) {
+            ResultSet rs = stmt.executeQuery(
+                "SELECT COUNT(*) as count FROM licenses WHERE expiry_time > 0 AND expiry_time < " + 
+                System.currentTimeMillis());
+            stats.put("expiredLicenses", rs.next() ? rs.getInt("count") : 0);
+        }
+        
+        try (Statement stmt = connection.createStatement()) {
+            ResultSet rs = stmt.executeQuery("SELECT COUNT(*) as count FROM tiers");
+            stats.put("totalTiers", rs.next() ? rs.getInt("count") : 0);
+        }
+        
+        try (Statement stmt = connection.createStatement()) {
+            ResultSet rs = stmt.executeQuery(
+                "SELECT COUNT(*) as count FROM validation_logs WHERE timestamp > " + 
+                (System.currentTimeMillis() - 86400000));
+            stats.put("validationsToday", rs.next() ? rs.getInt("count") : 0);
+        }
+        
+        return stats;
+    }
+    
+    // Validation logs
+    
+    public List<Map<String, Object>> getValidationLogs(int limit) throws SQLException {
+        String sql = "SELECT vl.*, l.product_id, p.name as product_name " +
+                     "FROM validation_logs vl " +
+                     "LEFT JOIN licenses l ON vl.license_key = l.key " +
+                     "LEFT JOIN products p ON l.product_id = p.id " +
+                     "ORDER BY vl.timestamp DESC LIMIT ?";
+        List<Map<String, Object>> logs = new ArrayList<>();
+        
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, limit);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> log = new HashMap<>();
+                    log.put("id", rs.getInt("id"));
+                    log.put("license_key", rs.getString("license_key"));
+                    log.put("hwid", rs.getString("hwid"));
+                    log.put("ip", rs.getString("ip"));
+                    log.put("timestamp", rs.getLong("timestamp"));
+                    log.put("success", rs.getBoolean("success"));
+                    log.put("product_name", rs.getString("product_name"));
+                    logs.add(log);
+                }
+            }
+        }
+        
+        return logs;
+    }
+    
     public void close() throws SQLException {
         if (connection != null && !connection.isClosed()) {
             connection.close();
