@@ -66,7 +66,7 @@ async function loadProducts() {
         const products = await response.json();
         
         if (products.length === 0) {
-            container.innerHTML = '<div class="empty-state"><div class="empty-icon">📦</div><p>No products yet. Create your first product!</p></div>';
+            container.innerHTML = '<div class="empty-state"><p>No products yet. Create your first product!</p></div>';
             return;
         }
         
@@ -75,7 +75,7 @@ async function loadProducts() {
                 <div class="card-header">
                     <h3>${escapeHtml(product.name)}</h3>
                     <div class="card-actions">
-                        <button class="btn-icon danger" onclick="confirmDelete('product', '${escapeHtml(product.id)}', '${escapeHtml(product.name)}')" title="Delete product">🗑️</button>
+                        <button class="btn-icon danger" onclick="confirmDelete('product', '${escapeHtml(product.id)}', '${escapeHtml(product.name)}')" title="Delete product">Delete</button>
                     </div>
                 </div>
                 <p>${escapeHtml(product.description || 'No description')}</p>
@@ -167,7 +167,7 @@ function renderLicenses(licenses) {
     const container = document.getElementById('licenses-list');
     
     if (licenses.length === 0) {
-        container.innerHTML = '<div class="empty-state"><div class="empty-icon">🔑</div><p>No licenses found.</p></div>';
+        container.innerHTML = '<div class="empty-state"><p>No licenses found.</p></div>';
         return;
     }
     
@@ -189,7 +189,7 @@ function renderLicenses(licenses) {
                     <tr>
                         <td>
                             <code>${escapeHtml(license.key)}</code>
-                            <button class="copy-btn" onclick="copyToClipboard('${escapeHtml(license.key)}')">📋</button>
+                            <button class="copy-btn" onclick="copyToClipboard('${escapeHtml(license.key)}')">Copy</button>
                         </td>
                         <td>${escapeHtml(license.product_name)}</td>
                         <td>${escapeHtml(license.tier_name || 'Full Access')}</td>
@@ -199,10 +199,10 @@ function renderLicenses(licenses) {
                         <td>
                             <div class="action-cell">
                                 <button class="btn-icon" onclick="toggleLicense('${escapeHtml(license.key)}', ${!license.active})" title="${license.active ? 'Deactivate' : 'Activate'}">
-                                    ${license.active ? '⏸️' : '▶️'}
+                                    ${license.active ? 'Pause' : 'Start'}
                                 </button>
-                                ${license.hwid ? `<button class="btn-icon" onclick="resetHwid('${escapeHtml(license.key)}')" title="Reset HWID">🔄</button>` : ''}
-                                <button class="btn-icon danger" onclick="confirmDelete('license', '${escapeHtml(license.key)}', '${escapeHtml(license.key)}')" title="Delete">🗑️</button>
+                                ${license.hwid ? `<button class="btn-icon" onclick="resetHwid('${escapeHtml(license.key)}')" title="Reset HWID">Reset</button>` : ''}
+                                <button class="btn-icon danger" onclick="confirmDelete('license', '${escapeHtml(license.key)}', '${escapeHtml(license.key)}')" title="Delete">Delete</button>
                             </div>
                         </td>
                     </tr>
@@ -343,7 +343,7 @@ async function loadTiers() {
                             <div class="card-header">
                                 <h3>${escapeHtml(tier.name)}</h3>
                                 <div class="card-actions">
-                                    <button class="btn-icon danger" onclick="confirmDelete('tier', '${escapeHtml(tier.id)}', '${escapeHtml(tier.name)}')" title="Delete tier">🗑️</button>
+                                    <button class="btn-icon danger" onclick="confirmDelete('tier', '${escapeHtml(tier.id)}', '${escapeHtml(tier.name)}')" title="Delete tier">Delete</button>
                                 </div>
                             </div>
                             <p>Product: ${escapeHtml(product.name)}</p>
@@ -357,7 +357,7 @@ async function loadTiers() {
             }
         }
         
-        container.innerHTML = html || '<div class="empty-state"><div class="empty-icon">🏷️</div><p>No tiers yet. Create pricing tiers for your products!</p></div>';
+        container.innerHTML = html || '<div class="empty-state"><p>No tiers yet. Create pricing tiers for your products!</p></div>';
         
     } catch (error) {
         console.error('Error loading tiers:', error);
@@ -417,7 +417,7 @@ async function loadLogs() {
         const logs = await response.json();
         
         if (logs.length === 0) {
-            container.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div><p>No validation logs yet.</p></div>';
+            container.innerHTML = '<div class="empty-state"><p>No validation logs yet.</p></div>';
             return;
         }
         
@@ -567,7 +567,7 @@ function showToast(message, type) {
     const container = document.getElementById('toast-container');
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-    toast.textContent = (type === 'toast-success' ? '✓ ' : '✗ ') + message;
+    toast.textContent = message;
     container.appendChild(toast);
     
     setTimeout(() => {
